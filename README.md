@@ -1,5 +1,6 @@
 # proxmox_disk_manager
 Interact with Proxmox disks- showing Active Directory Mounts, InActive Directory Mounts, Proxmox Storage
+Work in progress - the script works but the desired output view is taking a bit. 
 
 > **`Active Directory Mounts`**
     -
