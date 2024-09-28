@@ -1,15 +1,29 @@
 #!/bin/bash
 
-# Step 2: Get the list of disks and partitions separately
+# Step 1: Get the list of disks (excluding LVM, loop, and unwanted entries)
 get_disks() {
     lsblk -dn -o NAME | grep -vE "loop|lvm--|local--lvm" > disk_list.txt
 }
 
+# Step 2: Get the list of partitions (excluding LVM and unwanted entries)
 get_partitions() {
     lsblk -ln -o NAME | grep -vE "loop|lvm--|local--lvm" > partition_list.txt
-    sed -i '/lvm-vm/d' partition_list.txt
-    sed -i '/pve-root/d' partition_list.txt
-    sed -i '/pve-swap/d' partition_list.txt
+    sed -i '/lvm-vm/d' partition_list.txt    # Remove LVM virtual machine partitions
+    sed -i '/pve-root/d' partition_list.txt  # Remove Proxmox root partitions
+    sed -i '/pve-swap/d' partition_list.txt  # Remove Proxmox swap partitions
+}
+
+# Step 3: Map disks to partitions and generate the file
+map_disks_to_partitions() {
+    > mapped_disks_and_partitions.txt  # Clear or create the file
+
+    while IFS= read -r disk; do
+        echo "$disk:" >> mapped_disks_and_partitions.txt
+        # Find partitions that belong to this disk, ensuring not to list the disk itself
+        grep "^$disk" partition_list.txt | grep -v "^$disk$" | while read -r partition; do
+            echo "  - $partition" >> mapped_disks_and_partitions.txt
+        done
+    done < disk_list.txt
 }
 
 # Function to extract information using blkid, lsblk, and udevadm
@@ -121,6 +135,7 @@ generate_from_mapping() {
 # Main execution
 get_disks
 get_partitions
+map_disks_to_partitions
 generate_from_mapping
 
 echo "Command substitutes have been generated and saved in the 'disk_command_substitutes' directory."
