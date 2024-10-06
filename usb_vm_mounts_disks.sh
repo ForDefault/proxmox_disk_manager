@@ -18,6 +18,7 @@ for device_id in $mass_storage_device_ids; do
 done
 
 # Function to extract device info (description, product, vendor, serial, bus_info)
+# Function to extract device info (description, product, vendor, serial, bus_info)
 get_device_info() {
     device_id=$1
     source storage_devices.txt
@@ -26,13 +27,21 @@ get_device_info() {
     product_var="output_${device_id}_2"
     vendor_var="output_${device_id}_3"
     bus_info_var="output_${device_id}_5"
+
+    # Check primary and fallback serials
     serial_var="output_${device_id}_7"
+    serial=${!serial_var}
+
+    # If serial contains "usb" or a dot, try the next position
+    if [[ $serial == *"usb"* || $serial == *"."* ]]; then
+        serial_var="output_${device_id}_8"
+        serial=${!serial_var}
+    fi
 
     description=${!description_var}
     product=${!product_var}
     vendor=${!vendor_var}
     bus_info=${!bus_info_var}
-    serial=${!serial_var}
 
     echo "description: $description"
     echo "product: $product"
@@ -40,6 +49,7 @@ get_device_info() {
     echo "serial: $serial"
     echo "bus_info: $bus_info"
 }
+
 
 # Function to convert bus_info for comparison with VM configs
 convert_bus_info_format() {
