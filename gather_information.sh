@@ -100,8 +100,6 @@ generate_variables() {
         echo "total_size_${disk_counter}=\"$(extract_info "$disk_name" "total_size")\""
         echo "used_${disk_counter}=\"$(extract_info "$disk_name" "used")\""
         echo "percentage_used_${disk_counter}=\"$(extract_info "$disk_name" "percentage_used")\""
-        echo "num_partitions_${disk_counter}=\"${#partitions[@]}\""
-        echo "partition_name_${disk_counter}=\"$partition\""
         echo "uuid_${disk_counter}=\"$(extract_info "$disk_name" "uuid")\""
         echo "part_size_${disk_counter}=\"$(extract_info "$disk_name" "size")\""
         echo "fs_type_${disk_counter}=\"$(extract_info "$disk_name" "fs_type")\""
