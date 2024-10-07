@@ -42,7 +42,7 @@ extract_info() {
             blkid -s TYPE -o value "/dev/$device" | head -n 1
             ;;
         "mount_path")
-            lsblk -no MOUNTPOINT "/dev/$device" | head -n 1
+            mount | grep "/dev/$device" | awk '{print $3}' | head -n 1mount | grep "/dev/$device" | awk '{print $3}' | head -n 1
             ;;
         "size")
             lsblk -no SIZE "/dev/$device" | head -n 1
@@ -57,7 +57,8 @@ extract_info() {
             udevadm info --query=path --name="/dev/$device" | head -n 1
             ;;
         "devpath")
-            udevadm info --query=property --name="/dev/$device" | grep "DEVPATH=" | cut -d '=' -f2 | head -n 1
+            # Modified command to match the device dynamically
+            readlink -f /dev/disk/by-path/* 2>/dev/null | grep -Fx "/dev/$device" | head -n 1
             ;;
         "diskseq")
             udevadm info --query=property --name="/dev/$device" | grep "DISKSEQ=" | cut -d '=' -f2 | head -n 1
@@ -100,7 +101,18 @@ generate_variables() {
         echo "used_${disk_counter}=\"$(extract_info "$disk_name" "used")\""
         echo "percentage_used_${disk_counter}=\"$(extract_info "$disk_name" "percentage_used")\""
         echo "num_partitions_${disk_counter}=\"${#partitions[@]}\""
-
+        echo "partition_name_${disk_counter}=\"$partition\""
+        echo "uuid_${disk_counter}=\"$(extract_info "$disk_name" "uuid")\""
+        echo "part_size_${disk_counter}=\"$(extract_info "$disk_name" "size")\""
+        echo "fs_type_${disk_counter}=\"$(extract_info "$disk_name" "fs_type")\""
+        echo "mount_path_${disk_counter}=\"$(extract_info "$disk_name" "mount_path")\""
+        echo "mount_status_${disk_counter}=\"mounted\""  # Can be dynamically checked with `mount | grep`
+        echo "id_serial_${disk_counter}=\"$(extract_info "$disk_name" "id_serial")\""
+        echo "id_model_${disk_counter}=\"$(extract_info "$disk_name" "id_model")\""
+        echo "pcie_path_${disk_counter}=\"$(extract_info "$disk_name" "pcie_path")\""
+        echo "devpath_${disk_counter}=\"$(extract_info "$disk_name" "devpath")\""
+        echo "diskseq_${disk_counter}=\"$(extract_info "$disk_name" "diskseq")\""
+        
         partition_counter=1
         for partition in "${partitions[@]}"; do
             echo "partition_name_${disk_counter}_${partition_counter}=\"$partition\""
